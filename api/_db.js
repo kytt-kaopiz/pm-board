@@ -16,9 +16,12 @@ export async function initSchema(sql) {
       deadline TEXT,
       note TEXT DEFAULT '',
       assignee TEXT DEFAULT '',
+      category TEXT DEFAULT 'personal',
       created BIGINT DEFAULT 0
     )
   `;
+  // Add category column if upgrading from older schema
+  try { await sql`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'personal'`; } catch(e) {}
   await sql`
     CREATE TABLE IF NOT EXISTS members (
       id TEXT PRIMARY KEY,

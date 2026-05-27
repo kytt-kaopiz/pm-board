@@ -8,14 +8,15 @@ export default async function handler(req, res) {
   if (req.method === 'PUT') {
     const ex = (await sql`SELECT * FROM tasks WHERE id=${id}`)[0];
     if (!ex) return res.status(404).json({ error: 'Not found' });
-    const { title, priority, status, deadline, note, assignee } = req.body;
+    const { title, priority, status, deadline, note, assignee, category } = req.body;
     const rows = await sql`
       UPDATE tasks SET
         title=${title??ex.title}, priority=${priority??ex.priority},
         status=${status??ex.status},
         deadline=${deadline!==undefined?(deadline||null):ex.deadline},
         note=${note!==undefined?note:ex.note},
-        assignee=${assignee!==undefined?assignee:ex.assignee}
+        assignee=${assignee!==undefined?assignee:ex.assignee},
+        category=${category!==undefined?category:ex.category}
       WHERE id=${id} RETURNING *
     `;
     return res.json(rows[0]);

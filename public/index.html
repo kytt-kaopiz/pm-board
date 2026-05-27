@@ -116,8 +116,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
 .dragging{opacity:.3}
 /* LIST */
 .lv{display:flex;flex-direction:column;gap:3px}
-.lv-head{display:grid;grid-template-columns:1fr 80px 100px 140px 100px;gap:10px;padding:7px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.lrow{display:grid;grid-template-columns:1fr 80px 100px 140px 100px;gap:10px;padding:11px 16px;background:var(--surface);border-radius:var(--rs);border:1.5px solid var(--border);cursor:pointer;transition:all .12s;align-items:center}
+.lv-head{display:grid;grid-template-columns:1fr 90px 80px 100px 140px 100px;gap:10px;padding:7px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.lrow{display:grid;grid-template-columns:1fr 90px 80px 100px 140px 100px;gap:10px;padding:11px 16px;background:var(--surface);border-radius:var(--rs);border:1.5px solid var(--border);cursor:pointer;transition:all .12s;align-items:center}
 .lrow:hover{box-shadow:var(--sh);border-color:var(--border2)}
 .lrow.done-row{opacity:.55}
 .lrow.done-row .lr-title{text-decoration:line-through;color:var(--muted)}
@@ -205,6 +205,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
 .fe-add{margin:0 8px 8px;padding:6px 10px;border:1.5px dashed var(--border);border-radius:7px;background:transparent;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;color:var(--muted);text-align:left;transition:all .12s}
 .fe-add:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
 @keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.opt.c-sbu.sel      {background:#EDE9FE;border-color:#7C3AED;color:#7C3AED}
+.opt.c-project.sel  {background:#DBEAFE;border-color:#2563EB;color:#2563EB}
+.opt.c-personal.sel {background:#FCE7F3;border-color:#DB2777;color:#DB2777}
+.cat-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;white-space:nowrap}
+.cat-sbu     {background:#EDE9FE;color:#7C3AED}
+.cat-project {background:#DBEAFE;color:#2563EB}
+.cat-personal{background:#FCE7F3;color:#DB2777}
 .tcard,.mcard,.lrow{animation:up .16s ease both}
 </style>
 </head>
@@ -304,6 +311,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14p
           <div class="opt s-todo"  data-v="todo"  onclick="selOpt(this)">To Do</div>
           <div class="opt s-doing" data-v="doing" onclick="selOpt(this)">Doing</div>
           <div class="opt s-done"  data-v="done"  onclick="selOpt(this)">Done</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <div class="opts" id="catOpts">
+          <div class="opt c-sbu"      data-v="sbu"      onclick="selOpt(this)">🏢 SBU</div>
+          <div class="opt c-project"  data-v="project"  onclick="selOpt(this)">🚀 Project</div>
+          <div class="opt c-personal" data-v="personal" onclick="selOpt(this)">👤 Personal</div>
         </div>
       </div>
       <div class="row2">
@@ -445,10 +460,16 @@ function tcardHTML(t){
   const pl={high:'HIGH',med:'MED',low:'LOW'}[t.priority];
   return `<div class="tcard${t.status==='done'?' done-card':''}" draggable="true"
       ondragstart="dStart(event,'${t.id}')" ondragend="dEnd(event)" onclick="openTaskModal(null,'${t.id}')">
-    <div class="tc-top"><div class="tc-title">${esc(t.title)}</div><span class="pbadge ${pc}">${pl}</span></div>
+    <div class="tc-top">
+      <div class="tc-title">${esc(t.title)}</div>
+      <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+        ${t.category?`<span class="cat-badge cat-${t.category}">${{sbu:'SBU',project:'Project',personal:'Personal'}[t.category]||''}</span>`:''}
+        <span class="pbadge ${pc}">${pl}</span>
+      </div>
+    </div>
     <div class="tc-meta">
       ${t.deadline?`<span class="tc-dl${late?' late':''}">📅 ${fmtD(t.deadline)}${late?' · Overdue':''}</span>`:''}
-      ${m?`<span class="tc-who">${ini(m.name)}</span>`:''}
+      ${m?`<span class="tc-who">${esc(m.name)}</span>`:''}
       ${t.note?`<span style="font-size:11px;color:var(--muted)">📝</span>`:''}
       <span style="flex:1"></span>
       <button class="tc-del" onclick="delTask(event,'${t.id}')">✕</button>
@@ -458,7 +479,7 @@ function tcardHTML(t){
 
 function renderList(){
   const ft=getFiltered().sort((a,b)=>({todo:0,doing:1,done:2}[a.status]-{todo:0,doing:1,done:2}[b.status]));
-  let h=`<div class="lv"><div class="lv-head"><div>Task</div><div>Priority</div><div>Status</div><div>Deadline</div><div>Assignee</div></div>`;
+  let h=`<div class="lv"><div class="lv-head"><div>Task</div><div>Category</div><div>Priority</div><div>Status</div><div>Deadline</div><div>Assignee</div></div>`;
   if(!ft.length) h+=`<div class="empty"><div class="empty-ico">·</div><p>No tasks yet</p></div>`;
   ft.forEach(t=>{
     const m=members.find(m=>m.id===t.assignee);
@@ -467,12 +488,15 @@ function renderList(){
     const pl={high:'HIGH',med:'MED',low:'LOW'}[t.priority];
     const sc={todo:'s-todo',doing:'s-doing',done:'s-done'}[t.status];
     const sl={todo:'To Do',doing:'Doing',done:'Done'}[t.status];
+    const catLabel={sbu:'SBU',project:'Project',personal:'Personal'};
+    const catCls={sbu:'cat-sbu',project:'cat-project',personal:'cat-personal'};
     h+=`<div class="lrow${t.status==='done'?' done-row':''}" onclick="openTaskModal(null,'${t.id}')">
       <div class="lr-title">${esc(t.title)}</div>
+      <div>${t.category?`<span class="cat-badge ${catCls[t.category]||''}">${catLabel[t.category]||''}</span>`:''}</div>
       <div><span class="pbadge ${pc}">${pl}</span></div>
       <div><span class="lstatus ${sc}">${sl}</span></div>
       <div style="font-size:12px;font-weight:500;color:${late?'var(--red)':'var(--muted)'}">${t.deadline?(late?'⚠ ':'')+fmtD(t.deadline):'—'}</div>
-      <div style="font-size:12px;font-weight:500;color:var(--muted)">${m?m.name.split(' ').pop():'—'}</div>
+      <div style="font-size:12px;font-weight:500;color:var(--muted)">${m?esc(m.name):'—'}</div>
     </div>`;
   });
   document.getElementById('taskContent').innerHTML=h+'</div>';
@@ -534,6 +558,7 @@ function openTaskModal(defStatus, eid){
   document.getElementById('fNote').value    =t?(t.note||''):'';
   sel.value=t?(t.assignee||''):'';
   document.querySelectorAll('#prioOpts .opt').forEach(el=>el.classList.toggle('sel',el.dataset.v===(t?t.priority:'high')));
+  document.querySelectorAll('#catOpts .opt').forEach(el=>el.classList.toggle('sel',el.dataset.v===(t?t.category:'personal')));
   document.querySelectorAll('#statOpts .opt').forEach(el=>el.classList.toggle('sel',el.dataset.v===(t?t.status:(defStatus||'todo'))));
   document.getElementById('taskModal').classList.remove('hidden');
   setTimeout(()=>document.getElementById('fTitle').focus(),50);
@@ -546,6 +571,7 @@ async function saveTask(){
   if(!title){ document.getElementById('fTitle').focus(); return; }
   const priority=document.querySelector('#prioOpts .opt.sel')?.dataset.v||'med';
   const status  =document.querySelector('#statOpts .opt.sel')?.dataset.v||'todo';
+  const category=document.querySelector('#catOpts .opt.sel')?.dataset.v||'personal';
   const deadline=document.getElementById('fDeadline').value||'';
   const note    =document.getElementById('fNote').value.trim();
   const assignee=document.getElementById('fAssignee').value;
@@ -553,11 +579,11 @@ async function saveTask(){
   btn.disabled=true; btn.textContent='Saving...';
   try{
     if(editTid){
-      const u=await api('PUT','/api/tasks/'+editTid,{title,priority,status,deadline,note,assignee});
+      const u=await api('PUT','/api/tasks/'+editTid,{title,priority,status,category,deadline,note,assignee});
       const i=tasks.findIndex(t=>t.id===editTid); if(i>=0) tasks[i]=u;
       toast('Task updated');
     } else {
-      const n=await api('POST','/api/tasks',{id:uid(),title,priority,status,deadline,note,assignee,created:Date.now()});
+      const n=await api('POST','/api/tasks',{id:uid(),title,priority,status,category,deadline,note,assignee,created:Date.now()});
       tasks.push(n); toast('Task created');
     }
     render(); closeTaskModal();

@@ -10,11 +10,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { id, title, priority='med', status='todo', deadline=null, note='', assignee='', created=Date.now() } = req.body;
+    const { id, title, priority='med', status='todo', deadline=null, note='', assignee='', category='personal', created=Date.now() } = req.body;
     if (!title?.trim()) return res.status(400).json({ error: 'Title required' });
     const rows = await sql`
-      INSERT INTO tasks (id,title,priority,status,deadline,note,assignee,created)
-      VALUES (${id},${title.trim()},${priority},${status},${deadline||null},${note},${assignee},${created})
+      INSERT INTO tasks (id,title,priority,status,deadline,note,assignee,category,created)
+      VALUES (${id},${title.trim()},${priority},${status},${deadline||null},${note},${assignee},${category},${created})
       RETURNING *
     `;
     return res.json(rows[0]);
