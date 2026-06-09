@@ -1,6 +1,6 @@
 {
   "name": "pm-board",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3"
   }

@@ -8,28 +8,50 @@ export function getDb() {
 
 export async function initSchema(sql) {
   await sql`
-    CREATE TABLE IF NOT EXISTS tasks (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      priority TEXT NOT NULL DEFAULT 'med',
-      status TEXT NOT NULL DEFAULT 'todo',
-      deadline TEXT,
-      note TEXT DEFAULT '',
-      assignee TEXT DEFAULT '',
-      category TEXT DEFAULT 'personal',
-      created BIGINT DEFAULT 0
+    CREATE TABLE IF NOT EXISTS members (
+      id       TEXT PRIMARY KEY,
+      name     TEXT NOT NULL,
+      role     TEXT DEFAULT '',
+      good     JSONB DEFAULT '[]',
+      improve  JSONB DEFAULT '[]',
+      notes    JSONB DEFAULT '[]',
+      created  BIGINT DEFAULT 0
     )
   `;
-  // Add category column if upgrading from older schema
-  try { await sql`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'personal'`; } catch(e) {}
   await sql`
-    CREATE TABLE IF NOT EXISTS members (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      role TEXT DEFAULT '',
-      good JSONB DEFAULT '[]',
-      improve JSONB DEFAULT '[]',
-      created BIGINT DEFAULT 0
+    CREATE TABLE IF NOT EXISTS tasks (
+      id          TEXT PRIMARY KEY,
+      title       TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      priority    TEXT DEFAULT 'med',
+      status      TEXT DEFAULT 'todo',
+      category    TEXT DEFAULT 'personal',
+      bsc         TEXT DEFAULT '',
+      deadline    TEXT,
+      pic         TEXT DEFAULT '',
+      created     BIGINT DEFAULT 0,
+      updated     BIGINT DEFAULT 0
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS comments (
+      id       TEXT PRIMARY KEY,
+      task_id  TEXT NOT NULL,
+      author   TEXT DEFAULT 'Me',
+      content  TEXT NOT NULL,
+      created  BIGINT DEFAULT 0
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS reminders (
+      id        TEXT PRIMARY KEY,
+      task_id   TEXT,
+      title     TEXT NOT NULL,
+      note      TEXT DEFAULT '',
+      remind_at TEXT NOT NULL,
+      repeat    TEXT DEFAULT 'none',
+      done      INTEGER DEFAULT 0,
+      created   BIGINT DEFAULT 0
     )
   `;
 }

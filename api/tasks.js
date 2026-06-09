@@ -5,18 +5,18 @@ export default async function handler(req, res) {
   await initSchema(sql);
 
   if (req.method === 'GET') {
-    const rows = await sql`SELECT * FROM tasks ORDER BY created ASC`;
+    const rows = await sql`SELECT * FROM tasks ORDER BY created DESC`;
     return res.json(rows);
   }
 
   if (req.method === 'POST') {
-    const { id, title, priority='med', status='todo', deadline=null, note='', assignee='', category='personal', created=Date.now() } = req.body;
+    const { id, title, description='', priority='med', status='todo',
+            category='personal', bsc='', deadline=null, pic='', created=Date.now() } = req.body;
     if (!title?.trim()) return res.status(400).json({ error: 'Title required' });
     const rows = await sql`
-      INSERT INTO tasks (id,title,priority,status,deadline,note,assignee,category,created)
-      VALUES (${id},${title.trim()},${priority},${status},${deadline||null},${note},${assignee},${category},${created})
-      RETURNING *
-    `;
+      INSERT INTO tasks (id,title,description,priority,status,category,bsc,deadline,pic,created,updated)
+      VALUES (${id},${title.trim()},${description},${priority},${status},${category},${bsc},${deadline||null},${pic},${created},${created})
+      RETURNING *`;
     return res.json(rows[0]);
   }
 

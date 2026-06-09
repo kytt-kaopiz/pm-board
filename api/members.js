@@ -10,13 +10,12 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { id, name, role='', good=[], improve=[], created=Date.now() } = req.body;
+    const { id, name, role='', good=[], improve=[], notes=[], created=Date.now() } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Name required' });
     const rows = await sql`
-      INSERT INTO members (id,name,role,good,improve,created)
-      VALUES (${id},${name.trim()},${role},${JSON.stringify(good)},${JSON.stringify(improve)},${created})
-      RETURNING *
-    `;
+      INSERT INTO members (id,name,role,good,improve,notes,created)
+      VALUES (${id},${name.trim()},${role},${JSON.stringify(good)},${JSON.stringify(improve)},${JSON.stringify(notes)},${created})
+      RETURNING *`;
     return res.json(rows[0]);
   }
 
