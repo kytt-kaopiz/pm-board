@@ -1,5 +1,6 @@
 import { getDb, initSchema } from '../_db.js';
 export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   const sql = getDb(); await initSchema(sql);
   const { id } = req.query;
   if (req.method === 'PUT') {

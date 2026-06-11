@@ -1,5 +1,6 @@
 import { getDb, initSchema } from './_db.js';
 export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   const sql = getDb(); await initSchema(sql);
   if (req.method === 'GET') return res.json(await sql`SELECT * FROM reminders ORDER BY remind_at ASC`);
   if (req.method === 'POST') {
